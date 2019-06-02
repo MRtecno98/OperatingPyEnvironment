@@ -1,4 +1,4 @@
-import os, platform, enum, mimetypes, directimport, wrappers
+import os, platform, enum, mimetypes, directimport, wrappers, oapi
 
 class Systems() :
     class System(enum.Enum) :
@@ -49,9 +49,26 @@ class Shebang() :
 
 class Console() :
     def __init__(self) :
-        self.wd = os.getcwd()
-        self.path = os.environ['PATH'] + Systems.get_pathvar_sep() + self.wd
+        self._wd = os.getcwd()
+        self.path = os.environ['PATH'] + Systems.get_pathvar_sep() + self._wd
         self.commands = []
+        self._vars = {"EXEC" : True, "ON" : True}
+
+    def get_working_dir(self) :
+        return self._wd
+
+    def set_working_dir(self, d) :
+        os.chdir(os.path.abspath(d))
+        self._wd = d
+
+    def get_var(self, name) :
+        return self._vars[name]
+
+    def set_var(self, name, value) :
+        self._vars[name] = value
+
+    def get_vars(self) :
+        return self._vars.copy()
 
     def get_plug_files(self) :
         files = []
@@ -76,18 +93,63 @@ class Console() :
                         continue
         return files, cc
 
-    def load_plugins(self) :
-        print("Loading plugins")
+    def load_plugins(self, log=True) :
+        if log : print("Loading plugins")
         files, count = self.get_plug_files()
-        print("Found {0} plugin with {1} files checked".format(len(files), count))
+        if log : print("Found {0} plugin with {1} files checked".format(len(files), count))
         for f in files :
            m = directimport.import_mod(os.path.dirname(f), \
                                        os.path.splitext(os.path.basename(f))[0])
            api_data = m.oapi.api_data
+
+           count = 0
            for clazz in list(api_data.keys()) :
-               self.commands.append(wrappers.PluginClass(clazz, api_data[clazz]))
-        print("Loaded {0} class{1}".format(len(self.commands),
-                                           ("es" if len(self.commands) > 1 else "")))
+                if issubclass(clazz, oapi.Command) :
+                    self.commands.append(wrappers.PluginClass(clazz, api_data[clazz]))
+                count+=1
+               
+        if log : print("Loaded {0} class{1}".format(count,
+                                                   ("es" if count > 1 else "")))
+
+    def credits(self) :
+        crd = "EoE Operative Environment [Version 1.2.035]\n" + \
+              "(c) 2019 MRtecno98. MIT License (bit.ly/2Z5tcbT)"
+
+        return crd
+
+    def load_and_start(self) :
+        self.load_plugins()
+        self.start()
+
+    def terminate(self) :
+        self.set_var("ON", False)
+    
+    def start(self) :
+        print()
+        print(self.credits())
+        print()
+
+        while self.get_var("ON") :
+            cmd = input(self.get_working_dir() + "> ")
+
+            if cmd != "" :
+                s_cmd = cmd.split()
+
+                keyword = s_cmd[0].lower()
+                for plcl in self.commands :
+                    res = False
+                    if keyword == plcl.clazz.get_keyword() :
+                        inst = plcl.clazz(self)
+
+                        res = inst.process(cmd[1:])
+                        print()
+                        break
+                self.set_var("EXEC", bool(res))
+
+
+if __name__ == "__main__" :
+    Console().load_and_start()
+            
                             
                             
 
