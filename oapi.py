@@ -21,11 +21,11 @@ class Command(ABC) :
     def tooltip(self) :
         return 
 
-def register_api(plugin_name : str,
-                 plugin_desc : str,
-                 author      : str,
-                 version     : str,
-                 classes     : list) :
+def register_api(plugin_name , #string
+                 plugin_desc , #string
+                 author      , #string
+                 version     , #string
+                 classes     ) : #list of classes
     global api_data
     for clazz in classes :
         api_data[clazz] = {"pl_name" : plugin_name,
