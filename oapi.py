@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
-
+OAPI_META = {"version" : "1.3.0",
+             "author" : "MRtecno98"}
 
 api_data = {}
 

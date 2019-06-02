@@ -106,15 +106,21 @@ class Console() :
         files, count = self.get_plug_files()
         if log : print("Found {0} plugin with {1} files checked".format(len(files), count))
         for f in files :
-           m = directimport.import_mod(os.path.dirname(f), \
+            m = directimport.import_mod(os.path.dirname(f), \
                                        os.path.splitext(os.path.basename(f))[0])
-           api_data = m.oapi.api_data
+            has_imported_api = False
+            for i in dir(m) :
+                has_imported_api = has_imported_api or "OAPI_META" in dir(getattr(m, i))
+            if not has_imported_api :
+                print("Skipping plugin '{0}', api not found".format(m.__name__))
+                continue
+            api_data = m.oapi.api_data
 
-           count = 0
-           for clazz in list(api_data.keys()) :
-                if issubclass(clazz, oapi.Command) :
+            count = 0
+            for clazz in list(api_data.keys()) :
+                 if issubclass(clazz, oapi.Command) :
                     self.commands.append(wrappers.PluginClass(clazz, api_data[clazz]))
-                count+=1
+                 count+=1
                
         if log : print("Loaded {0} class{1}".format(count,
                                                    ("es" if count > 1 else "")))
@@ -144,8 +150,8 @@ class Console() :
                 s_cmd = cmd.split()
 
                 keyword = s_cmd[0].lower()
+                res = False
                 for plcl in self.commands :
-                    res = False
                     if keyword == plcl.clazz.get_keyword() :
                         inst = plcl.clazz(self)
 
