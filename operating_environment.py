@@ -49,13 +49,22 @@ class Shebang() :
 class NoSuchDirectoryException(Exception) :
     """New working dir not found"""
 
+class ReloadBeforeStartingException(Exception) :
+    """Reloading sequence started before main load"""
+
 class Console() :
     def __init__(self) :
-        self._wd = os.getcwd()
-        self.path = os.environ['PATH'] + Systems.get_pathvar_sep() + self._wd
+        self.update_working_dir()
+        self.load_path()
         self.commands = []
-        self._vars = {"EXEC" : True, "ON" : True}
+        self.load_vars()
 
+    def load_vars(self) :
+        self._vars = {"EXEC" : True, "ON" : False}
+
+    def load_path(self) :
+        self.path = os.environ['PATH'] + Systems.get_pathvar_sep() + self._wd
+    
     def get_working_dir(self) :
         return self._wd
 
@@ -137,11 +146,27 @@ class Console() :
         
     def terminate(self) :
         self.set_var("ON", False)
+
+    def reload(self) :
+        if not self.get_var("ON") :
+            raise ReloadBeforeStartingException("Can't reload before starting")
+            return
+        print("Reloading PATH")
+        self.load_path()
+        print("Cleaning commands, and internal variables")
+        self.commands = []
+        self.load_vars()
+        print("Unloading plugins...\n")
+        self.load_plugins()
+        print("\nEnvironment reloaded succesfully")
+        self.set_var("ON", True)
     
     def start(self) :
         print()
         print(self.credits())
         print()
+
+        self.set_var("ON", True)
 
         while self.get_var("ON") :
             cmd = input(self.get_working_dir() + "> ")

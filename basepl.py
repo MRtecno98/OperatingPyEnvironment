@@ -2,6 +2,21 @@
 
 import oapi, os
 
+def bytesize_to_formatted_string(size) :
+    units = {0 : "B",
+             1 : "KB",
+             2 : "MB",
+             3 : "GB",
+             4 : "TB"}
+    unit = 0
+    while size > 1024 :
+        if unit == 4 :
+            break
+        unit+=1
+        size = size / 1024
+    return str(round(size)) + units[unit]
+    
+
 class LS(oapi.Command) :
     def get_keyword() :
         return "ls"
@@ -24,7 +39,8 @@ class LS(oapi.Command) :
             else :
                 print(file + os.sep)
             totalsize += os.path.getsize(os.path.abspath(path) + os.sep + file)
-        print("\nTotal Size: " + str(totalsize) + "B")
+        
+        print("\nTotal Size: {0}".format(bytesize_to_formatted_string(totalsize)))
         return True
 
 class CD(oapi.Command) :
@@ -52,8 +68,40 @@ class EXIT(oapi.Command) :
         self.console.terminate()
         return True
 
+class SIZE(oapi.Command) :
+    def get_keyword() :
+        return "size"
+
+    def process(self, *args) :
+        path = "."
+        if args :
+            path = args[0]
+        if not os.path.exists(path) :
+            print(path + ": No such file or directory")
+            return False
+        path = os.path.abspath(path)
+        size = 0
+        if os.path.isfile(path) :
+            size = os.path.getsize(path)
+            print("{0} {1}".format("File", os.path.basename(path)))
+        else :
+            for i in os.listdir(path) :
+                size += os.path.getsize(path + \
+                                        (os.sep if not path.endswith(os.sep) else "") \
+                                        + i)
+            print("{0} {1}".format("Directory", os.path.basename(path)))
+        print("Size: {0}".format(bytesize_to_formatted_string(size)))
+        return True
+
+class RELOAD(oapi.Command) :
+    def get_keyword() :
+        return "reload"
+
+    def process(self, *args) :
+        self.console.reload()
+
 oapi.register_api("Base plugin",
                   "This plugins contains basic commands for the system",
                   "MRtecno98",
                   "1.1.1",
-                  [LS, EXIT, CD])
+                  [LS, EXIT, CD, SIZE, RELOAD])
