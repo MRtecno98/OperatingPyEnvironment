@@ -164,8 +164,3 @@ class Console() :
 
 if __name__ == "__main__" :
     c = Console().load_and_start()
-            
-                            
-                            
-
-    

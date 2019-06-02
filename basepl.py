@@ -7,7 +7,7 @@ class LS(oapi.Command) :
         return "ls"
 
     def process(self, *args) :
-        if len(args) > 0 :
+        if args :
             if os.path.isdir(args[0]) :
                 path = args[0]
             else :
@@ -32,7 +32,7 @@ class CD(oapi.Command) :
         return "cd"
 
     def process(self, *args) :
-        if len(args) == 0 :
+        if not args :
             print(self.console.get_working_dir())
             return True
         path = args[0]
