@@ -45,7 +45,9 @@ class Shebang() :
     @staticmethod
     def check_shebang(line) :
         return Shebang.parse_shebang(line) == Shebang.OA_SHEBANG
-    
+
+class NoSuchDirectoryException(Exception) :
+    """New working dir not found"""
 
 class Console() :
     def __init__(self) :
@@ -57,9 +59,15 @@ class Console() :
     def get_working_dir(self) :
         return self._wd
 
+    def update_working_dir(self) :
+        self._wd = os.getcwd()
+
     def set_working_dir(self, d) :
-        os.chdir(os.path.abspath(d))
-        self._wd = d
+        if os.path.isdir(d) :
+            os.chdir(os.path.abspath(d))
+            self.update_working_dir()
+        else :
+            raise NoSuchDirectoryException("{0}: Not a directory".format(d))
 
     def get_var(self, name) :
         return self._vars[name]
@@ -119,8 +127,8 @@ class Console() :
 
     def load_and_start(self) :
         self.load_plugins()
-        self.start()
-
+        return self.start()
+        
     def terminate(self) :
         self.set_var("ON", False)
     
@@ -141,14 +149,15 @@ class Console() :
                     if keyword == plcl.clazz.get_keyword() :
                         inst = plcl.clazz(self)
 
-                        res = inst.process(cmd[1:])
+                        res = inst.process(*s_cmd[1:])
                         print()
                         break
                 self.set_var("EXEC", bool(res))
+        return self
 
 
 if __name__ == "__main__" :
-    Console().load_and_start()
+    c = Console().load_and_start()
             
                             
                             
