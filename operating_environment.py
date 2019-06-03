@@ -46,11 +46,27 @@ class Shebang() :
     def check_shebang(line) :
         return Shebang.parse_shebang(line) == Shebang.OA_SHEBANG
 
+class VarTypes() :
+    @staticmethod
+    def tobool(value) :
+        return value != "False"
+
+    @staticmethod
+    def toint(value) :
+        return int(value) if value.isdecimal() else 0
+
+    @staticmethod
+    def tostr(value) :
+        return value
+
 class NoSuchDirectoryException(Exception) :
     """New working dir not found"""
 
 class ReloadBeforeStartingException(Exception) :
     """Reloading sequence started before main load"""
+
+class IllegalArgsException(Exception) :
+    """Wrong args to system function"""
 
 class Console() :
     def __init__(self) :
@@ -82,10 +98,62 @@ class Console() :
         return self._vars[name]
 
     def set_var(self, name, value) :
+        name, value = str(name), str(value)
+        if " " in name :
+            raise IllegalArgsException("Variable name can't contain spaces")
         self._vars[name] = value
 
-    def get_vars(self) :
-        return self._vars.copy()
+    def exists_var(self, name) :
+        return name in self.get_vars().keys()
+
+    def del_var(self, name) :
+        return self.get_vars(ref=True).pop(name, None)
+
+    def get_vars(self, ref=False) :
+        return self._vars.copy() if not ref else self._vars
+
+    def map_strvar(self, raw) :
+        raw = str(raw)
+        parsed = []
+        ntmp = []
+        
+        tmp = []
+        ind = False
+        for i in raw :
+            if i != "%" :
+                if not ind :
+                    ntmp+=i
+                else :
+                    if i == " " :
+                        parsed.append("".join(tmp))
+                        tmp.clear()
+                        ind = not ind
+                    tmp.append(i)
+            else :
+                if ind :
+                    parsed.append("%" + "".join(tmp).strip() + "%")
+                    tmp.clear()
+                else :
+                    parsed.append("".join(ntmp))
+                    ntmp.clear()
+                ind = not ind
+                
+        if tmp :
+            parsed.append("".join(tmp))
+        if ntmp :
+            parsed.append("".join(ntmp))
+            
+        return [i for i in parsed if i]
+
+    def replace_strvar(self, mapped) :
+        return "".join([self.get_var(i.replace("%", ""))
+                if ("%" in i)
+                and self.exists_var(i.replace("%", ""))
+                else i
+                for i in mapped])
+
+    def parse_strvar(self, raw) :
+        return self.replace_strvar(self.map_strvar(raw))
 
     def get_plug_files(self) :
         files = []
@@ -153,7 +221,7 @@ class Console() :
             return
         print("Reloading PATH")
         self.load_path()
-        print("Cleaning commands, and internal variables")
+        print("Cleaning commands and internal variables")
         self.commands = []
         self.load_vars()
         print("Unloading plugins...\n")
@@ -168,8 +236,8 @@ class Console() :
 
         self.set_var("ON", True)
 
-        while self.get_var("ON") :
-            cmd = input(self.get_working_dir() + "> ")
+        while VarTypes.tobool(self.get_var("ON")) :
+            cmd = self.parse_strvar(input(self.get_working_dir() + "> "))
 
             if cmd != "" :
                 s_cmd = cmd.split()

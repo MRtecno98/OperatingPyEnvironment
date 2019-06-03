@@ -100,8 +100,41 @@ class RELOAD(oapi.Command) :
     def process(self, *args) :
         self.console.reload()
 
+class SET(oapi.Command) :
+    def get_keyword() :
+        return "set"
+
+    def process(self, *args) :
+        if not args :
+            print("set: variable not found")
+            return False
+        if len(args) == 1 :
+            if not self.console
+            .del_var(args[0]) :
+                print(args[0] + ": no such variable")
+                return False
+        else :
+            self.console.set_var(args[0], args[1])
+        return True
+
+class GET(oapi.Command) :
+    def get_keyword() :
+        return "get"
+
+    def process(self, *args) :
+        if not args :
+            print("\n".join(
+                [str(k) + ": " + str(v)
+                 for k,v in self.console.get_vars().items()]))
+            return True
+        if not self.console.exists_var(args[0]) :
+            print(args[0] + ": no such variable")
+            return False
+        print(self.console.get_var(args[0]))
+        return True
+        
 oapi.register_api("Base plugin",
                   "This plugins contains basic commands for the system",
                   "MRtecno98",
                   "1.1.1",
-                  [LS, EXIT, CD, SIZE, RELOAD])
+                  [LS, EXIT, CD, SIZE, RELOAD, GET, SET])
