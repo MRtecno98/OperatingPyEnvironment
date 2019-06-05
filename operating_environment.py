@@ -49,7 +49,7 @@ class Shebang() :
 class VarTypes() :
     @staticmethod
     def tobool(value) :
-        return value != "False" and not isinstance(value, oapi.NULL)
+        return value != "False" and value != False and not isinstance(value, oapi.NULL)
 
     @staticmethod
     def toint(value) :
@@ -70,6 +70,10 @@ class IllegalArgsException(Exception) :
 
 class Console() :
     NULL = oapi.NULL()
+    systems = Systems
+    shebang = Shebang
+    vartypes = VarTypes
+    files = Files
     
     def __init__(self) :
         self.load_vars()
@@ -79,10 +83,13 @@ class Console() :
         self.load_daemons_api()
 
     def load_vars(self) :
-        self._vars = {"EXEC" : True, "ON" : False}
+        self._vars = {"EXEC" : True, "ON" : False,
+                      "FLAG_ADD_WD_TO_PATH" : False}
 
     def load_path(self) :
         self.path = os.environ['PATH'] + Systems.get_pathvar_sep() + self._wd
+        if VarTypes.tobool(self.get_var("FLAG_ADD_WD_TO_PATH")) :
+            os.environ["PATH"] += Systems.get_pathvar_sep() + self._wd
 
     def load_daemons_api(self) :
         self.daemons = daemons.DaemonsController()
@@ -100,6 +107,18 @@ class Console() :
             self.update_working_dir()
         else :
             raise NoSuchDirectoryException("{0}: Not a directory".format(d))
+
+    def set_sys_var(self, name, value) :
+        os.environ[name] = value
+
+    def get_sys_var(self, name) :
+        try :
+            return os.environ[name]
+        except KeyError :
+            return None
+
+    def get_sys_vars(self, ref=False) :
+        return os.environ.copy() if not ref else os.environ
 
     def get_var(self, name) :
         if self.exists_var(name) :
