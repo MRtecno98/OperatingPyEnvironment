@@ -76,11 +76,18 @@ class Console() :
     files = Files
     
     def __init__(self) :
+        self._failsafe_path = os.getcwd()
         self.load_vars()
         self.update_working_dir()
         self.load_path()
         self.commands = []
         self.load_daemons_api()
+
+    def failsafe(self) :
+        print("Failsafe activated")
+        self.set_working_dir(self._failsafe_path)
+        self.update_working_dir()
+        self.reload()
 
     def load_vars(self) :
         self._vars = {"EXEC" : True, "ON" : False,
@@ -271,21 +278,24 @@ class Console() :
         self.set_var("ON", True)
 
         while VarTypes.tobool(self.get_var("ON")) :
-            cmd = self.parse_strvar(input(self.get_working_dir() + "> "))
+            try :
+                cmd = self.parse_strvar(input(self.get_working_dir() + "> "))
 
-            if cmd != "" :
-                s_cmd = cmd.split()
+                if cmd != "" :
+                    s_cmd = cmd.split()
 
-                keyword = s_cmd[0].lower()
-                res = False
-                for plcl in self.commands :
-                    if keyword == plcl.clazz.get_keyword() :
-                        inst = plcl.clazz(self)
+                    keyword = s_cmd[0].lower()
+                    res = False
+                    for plcl in self.commands :
+                        if keyword == plcl.clazz.get_keyword() :
+                            inst = plcl.clazz(self)
 
-                        res = inst.process(*s_cmd[1:])
-                        print()
-                        break
-                self.set_var("EXEC", bool(res))
+                            res = inst.process(*s_cmd[1:])
+                            break
+                    self.set_var("EXEC", bool(res))
+            except KeyboardInterrupt :
+                self.failsafe()
+            print()
         return self
 
 
