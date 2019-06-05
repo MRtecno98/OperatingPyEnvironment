@@ -132,9 +132,20 @@ class GET(oapi.Command) :
             return False
         print(self.console.get_var(args[0]))
         return True
+
+class ECHO(oapi.Command) :
+    def get_keyword() :
+        return "echo"
+
+    def process(self, *args) :
+        if not args :
+            print("echo")
+        else :
+            print(" ".join(args))
+        return True
         
 oapi.register_api("Base plugin",
                   "This plugins contains basic commands for the system",
                   "MRtecno98",
                   "1.1.1",
-                  [LS, EXIT, CD, SIZE, RELOAD, GET, SET])
+                  [LS, EXIT, CD, SIZE, RELOAD, GET, SET, ECHO])
