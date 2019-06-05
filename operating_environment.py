@@ -84,7 +84,7 @@ class Console() :
     def load_path(self) :
         self.path = os.environ['PATH'] + Systems.get_pathvar_sep() + self._wd
 
-    def load_daemons_api() :
+    def load_daemons_api(self) :
         self.daemons = daemons.DaemonsController()
 
     def get_working_dir(self) :
@@ -197,6 +197,7 @@ class Console() :
         if log : print("Loading plugins")
         files, count = self.get_plug_files()
         if log : print("Found {0} plugin with {1} files checked".format(len(files), count))
+        ccount = 0
         for f in files :
             m = directimport.import_mod(os.path.dirname(f), \
                                        os.path.splitext(os.path.basename(f))[0])
@@ -207,14 +208,13 @@ class Console() :
                 print("Skipping plugin '{0}', api not found".format(m.__name__))
                 continue
             api_data = m.oapi.api_data
-
-            count = 0
+            
             for clazz in list(api_data.keys()) :
                  if issubclass(clazz, oapi.Command) :
                     self.commands.append(wrappers.PluginClass(clazz, api_data[clazz]))
-                 count+=1
+                 ccount+=1
                
-        if log : print("Loaded {0} class{1}".format(count,
+        if log : print("Loaded {0} class{1}".format(ccount,
                                                    ("es" if count > 1 else "")))
 
     def credits(self) :
