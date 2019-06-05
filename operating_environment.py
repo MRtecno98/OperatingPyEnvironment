@@ -49,7 +49,7 @@ class Shebang() :
 class VarTypes() :
     @staticmethod
     def tobool(value) :
-        return value != "False"
+        return value != "False" and not isinstance(value, oapi.NULL)
 
     @staticmethod
     def toint(value) :
@@ -69,11 +69,13 @@ class IllegalArgsException(Exception) :
     """Wrong args to system function"""
 
 class Console() :
+    NULL = oapi.NULL()
+    
     def __init__(self) :
+        self.load_vars()
         self.update_working_dir()
         self.load_path()
         self.commands = []
-        self.load_vars()
 
     def load_vars(self) :
         self._vars = {"EXEC" : True, "ON" : False}
@@ -85,6 +87,7 @@ class Console() :
         return self._wd
 
     def update_working_dir(self) :
+        self.set_var("CD", os.getcwd())
         self._wd = os.getcwd()
 
     def set_working_dir(self, d) :
@@ -95,16 +98,24 @@ class Console() :
             raise NoSuchDirectoryException("{0}: Not a directory".format(d))
 
     def get_var(self, name) :
-        return self._vars[name]
+        if self.exists_var(name) :
+            return self._vars[name]
+        else :
+            return self.NULL
 
     def set_var(self, name, value) :
+        if isinstance(value, oapi.NULL) :
+            self.del_var(name)
+            return
         name, value = str(name), str(value)
         if " " in name :
             raise IllegalArgsException("Variable name can't contain spaces")
         self._vars[name] = value
 
     def exists_var(self, name) :
-        return name in self.get_vars().keys()
+        return name in map(lambda x : x if not isinstance(self.get_vars()[x], oapi.NULL)
+                           else None,
+                           self.get_vars().keys())
 
     def del_var(self, name) :
         return self.get_vars(ref=True).pop(name, None)

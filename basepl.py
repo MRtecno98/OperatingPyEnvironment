@@ -109,8 +109,8 @@ class SET(oapi.Command) :
             print("set: variable not found")
             return False
         if len(args) == 1 :
-            if not self.console
-            .del_var(args[0]) :
+            if not self.console \
+              .del_var(args[0]) :
                 print(args[0] + ": no such variable")
                 return False
         else :

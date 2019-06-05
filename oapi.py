@@ -5,6 +5,9 @@ OAPI_META = {"version" : "1.3.0",
 
 api_data = {}
 
+class NULL() :
+    pass
+
 class Command(ABC) :
     def __init__(self, console) :
         self.console = console
