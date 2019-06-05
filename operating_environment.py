@@ -1,4 +1,4 @@
-import os, platform, enum, mimetypes, directimport, wrappers, oapi
+import os, platform, enum, mimetypes, directimport, wrappers, oapi, daemons
 
 class Systems() :
     class System(enum.Enum) :
@@ -76,13 +76,17 @@ class Console() :
         self.update_working_dir()
         self.load_path()
         self.commands = []
+        self.load_daemons_api()
 
     def load_vars(self) :
         self._vars = {"EXEC" : True, "ON" : False}
 
     def load_path(self) :
         self.path = os.environ['PATH'] + Systems.get_pathvar_sep() + self._wd
-    
+
+    def load_daemons_api() :
+        self.daemons = daemons.DaemonsController()
+
     def get_working_dir(self) :
         return self._wd
 
