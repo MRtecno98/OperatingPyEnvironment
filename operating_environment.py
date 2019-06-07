@@ -85,6 +85,7 @@ class Console() :
         self.update_working_dir()
         self.load_path()
         self.commands = []
+        self.plugins = []
         self.load_daemons_api()
 
     def failsafe(self) :
@@ -237,15 +238,20 @@ class Console() :
             if not has_imported_api :
                 print("Skipping plugin '{0}', api not found".format(m.__name__))
                 continue
-            api_data = m.oapi.api_data
-            
-            for clazz in list(api_data.keys()) :
-                 if issubclass(clazz, oapi.Command) :
-                    self.commands.append(wrappers.PluginClass(clazz, api_data[clazz]))
-                 ccount+=1
+        api_data = m.oapi.api_data
+        self.plugins.extend(list(dict.fromkeys(
+            [wrappers.hashabledict(d) for d in list(m.oapi.api_data.values())]
+        )))
+
+        for clazz in list(api_data.keys()) :
+            if issubclass(clazz, oapi.Command) :
+                self.commands.append(wrappers.PluginClass(clazz, api_data[clazz]))
+                ccount+=1
                
         if log : print("Loaded {0} class{1}".format(ccount,
-                                                   ("es" if count > 1 else "")))
+                                                   ("es" if ccount > 1 else "")))
+
+        return ccount, (len(files), count)
 
     def title(self) :
         return "EoE Operative Environment [Version 1.4.074]"

@@ -5,3 +5,8 @@ class PluginClass() :
         self.plugin_description = meta["pl_desc"]
         self.plugin_author = meta["author"]
         self.plugin_version = meta["version"]
+
+
+class hashabledict(dict):
+    def __hash__(self):
+        return hash(tuple(sorted(self.items())))
