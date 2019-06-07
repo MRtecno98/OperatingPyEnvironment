@@ -182,18 +182,24 @@ class PLUGINS(oapi.Command) :
         return "plugins"
 
     def process(self, *args) :
+        verbose = "--verbose" in args
+        
         for i in self.console.plugins :
             desc = i["pl_desc"].split()
             desc_max = self.DESCRIPTION_MAX_WORDS
             desc_reorg = [" ".join(desc[i:i+desc_max])
                           for i in range(0, len(desc), desc_max)]
-            
-            print(i["pl_name"] + ":")
-            print("    Description: " +
-                  ("\n" + (" " * 17)).join(desc_reorg))
-            print("    Version: " + i["version"])
-            print("    Author: " + i["author"])
-            print()
+
+            if not verbose :
+                print(i["pl_name"] + " [v." + i["version"] + "]")
+            else :
+                print(i["pl_name"] + ":")
+                print("    Description: " +
+                     ("\n" + (" " * 17)).join(desc_reorg))
+                print("    Version: " + i["version"])
+                print("    Author: " + i["author"])
+                print()
+                
         return True
         
 oapi.register_api("Base plugin",

@@ -277,11 +277,22 @@ class Console() :
         print("Reloading PATH")
         self.load_path()
         print("Cleaning commands and internal variables")
-        self.commands = []
+        self.commands.clear()
+        self.plugins.clear()
         self.load_vars()
-        print("Unloading plugins...\n")
-        self.load_plugins()
-        print("\nEnvironment reloaded succesfully")
+        print("Unloading plugins...")
+        
+        res = self.load_plugins(log=False)
+        print("Reloaded {0} class{1} with {2} plugin{3} found out of {4} file{5}".format(
+            res[0],
+            "es" if res[0] != 1 else "",
+            res[1][0],
+            "s" if res[1][0] != 1 else "",
+            res[1][1],
+            "s" if res[1][1] != 1 else ""
+        ))
+        
+        print("\nEnvironment reloaded succesfully.")
         self.set_var("ON", True)
     
     def start(self) :
