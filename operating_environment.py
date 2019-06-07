@@ -1,4 +1,4 @@
-import os, platform, enum, mimetypes, directimport, wrappers, oapi, daemons
+import os, sys, platform, enum, mimetypes, directimport, wrappers, oapi, daemons
 
 class Systems() :
     class System(enum.Enum) :
@@ -10,9 +10,13 @@ class Systems() :
             return "<System: " + self.name + ">"
 
     @staticmethod
+    def is_running_idle() :
+        return 'idlelib.run' in sys.modules
+    
+    @staticmethod
     def get_sys_list(legacy=False) :
         return [e.name if e.name != "MAC" else "DAR" if legacy else "MAC"
-                for e in Systems.get_sys_listSystem]
+                for e in Systems.System]
     
     @staticmethod
     def get_sys_map(legacy=False) :

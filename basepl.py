@@ -1,6 +1,6 @@
 #! oa_py
 
-import oapi, os
+import oapi, os, sys
 
 def bytesize_to_formatted_string(size) :
     units = {0 : "B",
@@ -143,9 +143,30 @@ class ECHO(oapi.Command) :
         else :
             print(" ".join(args))
         return True
+
+class CLEAR(oapi.Command) :
+    def get_keyword() :
+        return "clear"
+
+    def process(self, *args) :
+        systems = self.console.systems
+        syst = systems.get_current_sys()
+
+        if systems.is_running_idle() :
+            print("clear: Clear screen not supported in IDLE")
+            return False
+        
+        print("clear: Clear screen is not supported on your shell")
+        
+        if syst == systems.System.WIN :
+            os.system("cls")
+        elif syst in (systems.System.MAC, systems.System.LIN) :
+            os.system("clear && printf '\e[3J'")
+
+        return True
         
 oapi.register_api("Base plugin",
                   "This plugins contains basic commands for the system",
                   "MRtecno98",
                   "1.1.1",
-                  [LS, EXIT, CD, SIZE, RELOAD, GET, SET, ECHO])
+                  [LS, EXIT, CD, SIZE, RELOAD, GET, SET, ECHO, CLEAR])
