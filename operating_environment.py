@@ -35,7 +35,7 @@ class Files() :
     @staticmethod
     def is_text(file) :
         type = mimetypes.guess_type(os.path.abspath(file))[0]
-        return (type.split("/")[0] == "text") if type != None else False
+        return (type.split("/")[0] == "text") if type != None else True
 
 class Shebang() :
     OA_SHEBANG = "oa_py"
