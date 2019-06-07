@@ -247,11 +247,15 @@ class Console() :
         if log : print("Loaded {0} class{1}".format(ccount,
                                                    ("es" if count > 1 else "")))
 
-    def credits(self) :
-        crd = "EoE Operative Environment [Version 1.2.035]\n" + \
-              "(c) 2019 MRtecno98. MIT License (bit.ly/2Z5tcbT)"
+    def title(self) :
+        return "EoE Operative Environment [Version 1.4.074]"
 
-        return crd
+    def copyright(self) :
+        return "(c) 2019 MRtecno98. MIT License (bit.ly/2Z5tcbT)"
+
+    def credits(self) :
+        return "\n".join([self.title(),
+                          self.copyright()])
 
     def load_and_start(self) :
         self.load_plugins()
