@@ -252,7 +252,7 @@ class HELP(oapi.Command) :
 
     def process(self, *args) :
         if not args :
-            print(self.help())
+            print(HELP.help())
         else :
             for i in self.console.commands :
                 if i.clazz.get_keyword() == args[0].lower() :

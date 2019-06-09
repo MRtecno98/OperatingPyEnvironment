@@ -319,16 +319,19 @@ class Console() :
 
                     keyword = s_cmd[0].lower()
                     res = False
+                    ff = False
                     for plcl in self.commands :
                         if keyword == plcl.clazz.get_keyword() :
+                            ff = True
                             inst = plcl.clazz(self)
 
                             res = inst.process(*s_cmd[1:])
                             break
+                    if not ff : print(keyword + ": command not found")
                     self.set_var("EXEC", bool(res))
             except KeyboardInterrupt :
                 self.failsafe()
-            print()
+            if cmd != "" : print()
         return self
 
 
