@@ -6,6 +6,10 @@ class TOUCH(oapi.Command) :
     def get_keyword() :
         return "touch"
 
+    def help() :
+        return "TOUCH Command, creates an empty file\n" + \
+               "\nUsage: touch <filename>"
+
     def process(self, *args) :
         if not args :
             print("touch: illegal args")
@@ -17,6 +21,10 @@ class MKDIR(oapi.Command) :
     def get_keyword() :
         return "mkdir"
 
+    def help() :
+        return "MKDIR Command, creates a directory path\n" + \
+               "\nUsage: mkdir <path>"
+
     def process(self, *args) :
         if not args :
             print("mkdir: illegal args")
@@ -27,6 +35,10 @@ class MKDIR(oapi.Command) :
 class RM(oapi.Command) :
     def get_keyword() :
         return "rm"
+
+    def help() :
+        return "RM Command, deletes a file or a folder recursively\n" + \
+               "\nUsage: rm <path>"
 
     def process(self, *args) :
         if not args or (not os.path.exists(args[0])) :
@@ -49,6 +61,10 @@ class RM(oapi.Command) :
 class CAT(oapi.Command) :
     def get_keyword() :
         return "cat"
+
+    def help() :
+        return "CAT Command, displays the content of a file\n" + \
+               "\nUsage: cat <file>"
 
     def process(self, *args) :
         if not args or (not self.console.files.is_text(

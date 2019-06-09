@@ -6,6 +6,10 @@ class EXEC(oapi.Command) :
     def get_keyword() :
         return "exec"
 
+    def help() :
+        return "EXEC Command, executes python code in a plugin environment\n" + \
+               "\nUsage: exec <code>"
+
     def process(self, *args) :
         if not args :
             return True

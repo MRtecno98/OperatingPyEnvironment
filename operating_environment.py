@@ -35,7 +35,8 @@ class Files() :
     @staticmethod
     def is_text(file) :
         type = mimetypes.guess_type(os.path.abspath(file))[0]
-        return (type.split("/")[0] == "text") if type != None else True
+        return os.path.getsize(os.path.abspath(file)) == 0 or \
+               ((type.split("/")[0] == "text") if type != None else False)
 
 class Shebang() :
     OA_SHEBANG = "oa_py"
@@ -200,7 +201,7 @@ class Console() :
 
     def parse_strvar(self, raw) :
         return self.replace_strvar(self.map_strvar(raw))
-
+    
     def get_plug_files(self) :
         files = []
         cc = 0
@@ -229,7 +230,7 @@ class Console() :
         files, count = self.get_plug_files()
         if log : print("Found {0} plugin with {1} files checked".format(len(files), count))
         ccount = 0
-        for f in files :
+        for f in files :            
             m = directimport.import_mod(os.path.dirname(f), \
                                        os.path.splitext(os.path.basename(f))[0])
             has_imported_api = False
@@ -239,9 +240,16 @@ class Console() :
                 print("Skipping plugin '{0}', api not found".format(m.__name__))
                 continue
         api_data = m.oapi.api_data
-        self.plugins.extend(list(dict.fromkeys(
+        pls = list(dict.fromkeys(
             [wrappers.hashabledict(d) for d in list(m.oapi.api_data.values())]
-        )))
+        ))
+
+        pls_m = []
+        for i in pls :
+            i["module"] = m
+            pls_m.append(i)
+
+        self.plugins.extend(pls_m)
 
         for clazz in list(api_data.keys()) :
             if issubclass(clazz, oapi.Command) :

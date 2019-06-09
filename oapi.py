@@ -21,8 +21,10 @@ class Command(ABC) :
     def process(self, *args) :
         pass
 
-    def tooltip(self) :
-        return 
+    @staticmethod
+    def help() :
+        return "Generic command\n" + \
+               "\nUsage: command <args>"
 
 def register_api(plugin_name , #string
                  plugin_desc , #string

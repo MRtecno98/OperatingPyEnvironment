@@ -21,6 +21,10 @@ class LS(oapi.Command) :
     def get_keyword() :
         return "ls"
 
+    def help() :
+        return "LS Command, shows a directory content\n" + \
+               "\nUsage: ls [path]"
+
     def process(self, *args) :
         if args :
             if os.path.isdir(args[0]) :
@@ -47,6 +51,10 @@ class CD(oapi.Command) :
     def get_keyword() :
         return "cd"
 
+    def help() :
+        return "CD Command, changes the current working directory\n" + \
+               "\nUsage: cd [path]"
+
     def process(self, *args) :
         if not args :
             print(self.console.get_working_dir())
@@ -64,6 +72,10 @@ class EXIT(oapi.Command) :
     def get_keyword() :
         return "exit"
 
+    def help() :
+        return "EXIT Command, stops the system\n" + \
+               "\nUsage: exit"
+
     def process(self, *args) :
         self.console.terminate()
         return True
@@ -71,6 +83,10 @@ class EXIT(oapi.Command) :
 class SIZE(oapi.Command) :
     def get_keyword() :
         return "size"
+
+    def help() :
+        return "SIZE Command, shows the size of a file or a folder\n" + \
+               "\nUsage: size [path]"
 
     def process(self, *args) :
         path = "."
@@ -97,12 +113,20 @@ class RELOAD(oapi.Command) :
     def get_keyword() :
         return "reload"
 
+    def help() :
+        return "RELOAD Command, reloads the system\n" + \
+               "\nUsage: reload"
+
     def process(self, *args) :
         self.console.reload()
 
 class SET(oapi.Command) :
     def get_keyword() :
         return "set"
+
+    def help() :
+        return "SET Command, modifies environment variiables\n" + \
+               "\nUsage: set <variable> [value]"
 
     def process(self, *args) :
         if not args :
@@ -121,6 +145,10 @@ class GET(oapi.Command) :
     def get_keyword() :
         return "get"
 
+    def help() :
+        return "GET Command, shows environment variiables\n" + \
+               "\nUsage: get [variable]"
+
     def process(self, *args) :
         if not args :
             print("\n".join(
@@ -137,6 +165,10 @@ class ECHO(oapi.Command) :
     def get_keyword() :
         return "echo"
 
+    def help() :
+        return "ECHO Command, display a message on screen\n" + \
+               "\nUsage: echo [message]"
+
     def process(self, *args) :
         if not args :
             print("echo")
@@ -147,6 +179,10 @@ class ECHO(oapi.Command) :
 class CLEAR(oapi.Command) :
     def get_keyword() :
         return "clear"
+
+    def help() :
+        return "CLEAR Command, clears the screen\n" + \
+               "\nUsage: clear"
 
     def process(self, *args) :
         systems = self.console.systems
@@ -175,11 +211,19 @@ class VERSION(oapi.Command) :
 
         return True
 
+    def help() :
+        return "PLUGINS Command, shows the version of the system\n" + \
+               "\nUsage: version"
+
 class PLUGINS(oapi.Command) :
     DESCRIPTION_MAX_WORDS = 8
     
     def get_keyword() :
         return "plugins"
+
+    def help() :
+        return "PLUGINS Command, shows the list of plugins\n" + \
+               "\nUsageplugins [--verbose]"
 
     def process(self, *args) :
         verbose = "--verbose" in args
@@ -201,10 +245,30 @@ class PLUGINS(oapi.Command) :
                 print()
                 
         return True
+
+class HELP(oapi.Command) :
+    def get_keyword() :
+        return "help"
+
+    def process(self, *args) :
+        if not args :
+            print(self.help())
+        else :
+            for i in self.console.commands :
+                if i.clazz.get_keyword() == args[0].lower() :
+                    print(i.clazz.help())
+                    return True
+            print("{0}: command not found".format(args[0]))
+            return False
+        return True
+    
+    def help() :
+        return "HELP Command, shows help messages of various commands\n" + \
+               "\nUsage: help <command>"
         
 oapi.register_api("Base plugin",
                   "This plugins contains basic commands for the system",
                   "MRtecno98",
                   "1.3.4",
                   [LS, EXIT, CD, SIZE, RELOAD, GET, SET, ECHO, CLEAR, VERSION,
-                   PLUGINS])
+                   PLUGINS, HELP])
