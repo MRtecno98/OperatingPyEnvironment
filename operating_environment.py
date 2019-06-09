@@ -271,6 +271,9 @@ class Console() :
         return "\n".join([self.title(),
                           self.copyright()])
 
+    def get_prompt(self) :
+        return self.get_working_dir() + "> "
+
     def load_and_start(self) :
         self.load_plugins()
         return self.start()
@@ -302,6 +305,31 @@ class Console() :
         
         print("\nEnvironment reloaded succesfully.")
         self.set_var("ON", True)
+
+    def execute(self, inp) :
+        if not VarTypes.tobool(self.get_var("ON")) :
+            return None
+        
+        cmd = self.parse_strvar(inp)
+
+        if cmd != "" :
+            s_cmd = cmd.split()
+
+            keyword = s_cmd[0].lower()
+            res = False
+            ff = False
+            for plcl in self.commands :
+                if keyword == plcl.clazz.get_keyword() :
+                    ff = True
+                    inst = plcl.clazz(self)
+
+                    res = inst.process(*s_cmd[1:])
+                    break
+            if not ff : print(keyword + ": command not found")
+            self.set_var("EXEC", bool(res))
+            return bool(res)
+        else :
+            return True
     
     def start(self) :
         print()
@@ -310,25 +338,11 @@ class Console() :
 
         self.set_var("ON", True)
 
-        while VarTypes.tobool(self.get_var("ON")) :
+        res = True
+        while res != None :
             try :
-                cmd = self.parse_strvar(input(self.get_working_dir() + "> "))
-
-                if cmd != "" :
-                    s_cmd = cmd.split()
-
-                    keyword = s_cmd[0].lower()
-                    res = False
-                    ff = False
-                    for plcl in self.commands :
-                        if keyword == plcl.clazz.get_keyword() :
-                            ff = True
-                            inst = plcl.clazz(self)
-
-                            res = inst.process(*s_cmd[1:])
-                            break
-                    if not ff : print(keyword + ": command not found")
-                    self.set_var("EXEC", bool(res))
+                cmd = input(self.get_prompt()).strip()
+                res = self.execute(cmd)
             except KeyboardInterrupt :
                 self.failsafe()
             if cmd != "" : print()
