@@ -104,6 +104,9 @@ class Console() :
         if VarTypes.tobool(self.get_var("FLAG_ADD_WD_TO_PATH")) :
             os.environ["PATH"] += Systems.get_pathvar_sep() + self._wd
 
+    def add_to_path(self, path) :
+        self.path += Systems.get_pathvar_sep() + path
+
     def load_daemons_api(self) :
         self.daemons = daemons.DaemonsController()
 
@@ -230,31 +233,34 @@ class Console() :
         files, count = self.get_plug_files()
         if log : print("Found {0} plugin with {1} files checked".format(len(files), count))
         ccount = 0
-        for f in files :            
+        for f in files :
             m = directimport.import_mod(os.path.dirname(f), \
                                        os.path.splitext(os.path.basename(f))[0])
+            
             has_imported_api = False
             for i in dir(m) :
                 has_imported_api = has_imported_api or "OAPI_META" in dir(getattr(m, i))
             if not has_imported_api :
                 print("Skipping plugin '{0}', api not found".format(m.__name__))
                 continue
-        api_data = m.oapi.api_data
-        pls = list(dict.fromkeys(
-            [wrappers.hashabledict(d) for d in list(m.oapi.api_data.values())]
-        ))
 
-        pls_m = []
-        for i in pls :
-            i["module"] = m
-            pls_m.append(i)
+        if len(files) > 0 :
+            api_data = m.oapi.api_data
+            pls = list(dict.fromkeys(
+                [wrappers.hashabledict(d) for d in list(m.oapi.api_data.values())]
+            ))
 
-        self.plugins.extend(pls_m)
+            pls_m = []
+            for i in pls :
+                i["module"] = m
+                pls_m.append(i)
 
-        for clazz in list(api_data.keys()) :
-            if issubclass(clazz, oapi.Command) :
-                self.commands.append(wrappers.PluginClass(clazz, api_data[clazz]))
-                ccount+=1
+            self.plugins.extend(pls_m)
+
+            for clazz in list(api_data.keys()) :
+                if issubclass(clazz, oapi.Command) :
+                    self.commands.append(wrappers.PluginClass(clazz, api_data[clazz]))
+                    ccount+=1
                
         if log : print("Loaded {0} class{1}".format(ccount,
                                                    ("es" if ccount > 1 else "")))
@@ -307,9 +313,6 @@ class Console() :
         self.set_var("ON", True)
 
     def execute(self, inp) :
-        if not VarTypes.tobool(self.get_var("ON")) :
-            return None
-        
         cmd = self.parse_strvar(inp)
 
         if cmd != "" :
@@ -339,7 +342,7 @@ class Console() :
         self.set_var("ON", True)
 
         res = True
-        while res != None :
+        while VarTypes.tobool(self.get_var("ON")) :
             try :
                 cmd = input(self.get_prompt()).strip()
                 res = self.execute(cmd)
